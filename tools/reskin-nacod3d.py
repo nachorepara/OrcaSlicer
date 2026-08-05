@@ -55,6 +55,12 @@ MAPA = {
     "00F0D8": "FDBA74",
     "8DE5D6": "FDBA74",
     "5EEAD4": "FDBA74",
+    # Cianes muy brillantes que Orca usa como acento sobre fondo oscuro:
+    # el segundo valor del par de modo oscuro en btn_confirm (Button.cpp), y
+    # los enlaces y el botón de descarga de la vista de inicio (home.css).
+    "00FFD4": "FDBA74",
+    "00FFEA": "FDBA74",
+    "00FFD9": "FDBA74",
     # más oscuros: pressed, bordes
     "00897B": "C2410C",  # teal 600  -> orange 700
     "008172": "C2410C",
