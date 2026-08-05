@@ -1,0 +1,57 @@
+# Compilación de desarrollo de nacod3d Slicer: solo Windows x64.
+#
+# El `build_all.yml` del upstream compila para siete plataformas (Windows x64 y
+# arm64, macOS Intel y ARM, Linux x64 y ARM, y Flatpak). Para iterar sobre el
+# fork eso es tiempo perdido: apuntamos a Windows.
+#
+# Está en un archivo aparte, y no como una edición de `build_all.yml`, para que
+# sincronizar con el upstream no genere conflictos: ellos tocan su archivo,
+# nosotros el nuestro. `build_all.yml` queda desactivado en el fork pero intacto,
+# disponible por disparo manual cuando haga falta una release multiplataforma.
+
+name: Build nacod3d (Windows x64)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "deps/**"
+      - "src/**"
+      - "**/CMakeLists.txt"
+      - "version.inc"
+      - "resources/**"
+      - "localization/**"
+      - ".github/workflows/build_*.yml"
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      build-deps-only:
+        description: "Solo compilar dependencias (ignora el caché)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows:
+    name: Windows x64
+    uses: ./.github/workflows/build_check_cache.yml
+    with:
+      os: windows-latest
+      arch: x64
+      build-deps-only: ${{ inputs.build-deps-only || false }}
+    secrets: inherit
+
+  tests:
+    name: Tests
+    needs: windows
+    if: ${{ !cancelled() && success() && !inputs.build-deps-only }}
+    uses: ./.github/workflows/unit_tests.yml
+    with:
+      os: windows-latest
+      artifact: ${{ github.sha }}-tests-windows-x64
