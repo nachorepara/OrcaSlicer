@@ -205,30 +205,56 @@ cerrarnos ahí.
 
 ---
 
-## Lo que el análisis geométrico tiene que calcular
+## El análisis geométrico: casi todo ya existe en Orca
 
-Base de todo lo demás. Corre local, sin IA, y alimenta tanto los avisos directos
-como el contexto que se le manda al modelo.
+**Revisado el 2026-08-06.** La conclusión importante: no hay que escribirlo, hay
+que **exponer lo que Orca ya calcula**.
 
-- Voladizos y ángulos críticos por cara
-- Espesor mínimo de pared, comparado contra el ancho de línea configurado
-- Relación de aspecto y estabilidad (centro de masa vs. área de apoyo)
-- Volumen de soporte estimado **por cada orientación candidata**
-- Área de contacto con la cama
-- Integridad de la malla: aristas abiertas, aristas con 3+ caras, triángulos
-  degenerados, normales invertidas
-- **Señales para deducir el uso** (decisión 6): agujeros pasantes, espesor de
-  pared, relación superficie/volumen, roscas, simetría. Con un umbral de
-  confianza por debajo del cual no se arriesga una lectura y se pregunta.
+### Integridad de la malla — `TriangleMeshStats` (`src/libslic3r/TriangleMesh.hpp`)
 
-**Antes de escribir nada de esto, revisar qué ya existe en `libslic3r`.** Orca
-tiene reparación de mallas y cálculo de soportes propios; reimplementarlos sería
-trabajo tirado.
+```cpp
+open_edges          // agujeros en la superficie
+degenerate_facets   // triángulos sin área
+facets_reversed     // normales invertidas
+backwards_edges
+edges_fixed, facets_removed
+manifold()          // ¿es un sólido cerrado?
+```
 
-Hay una implementación de referencia en el repo archivado
-`nachorepara/nacod3d-slicer`, en `src/viewer/malla.ts` — con el detalle no obvio
-de que **hay que soldar vértices con tolerancia** antes de poder detectar
-agujeros, porque un STL repite cada vértice sin decir cuáles son el mismo punto.
+Es exactamente lo que hacía falta, probado durante años sobre millones de
+piezas.
+
+### Orientaciones — `Orient.cpp` / `Orient.hpp` (`src/libslic3r/`)
+
+Puntúa **cada orientación candidata** con:
+
+| Campo | Qué es |
+|---|---|
+| `overhang` | área en voladizo |
+| `bottom`, `bottom_hull` | área de contacto con la cama |
+| `contour` | longitud del contorno |
+| `area_laf` | área de caras de ángulo bajo |
+| `area_projected` | perfil proyectado en 2D |
+| `volume`, `area_total` | volumen y superficie total |
+| `height_to_bottom_hull_ratio` | **estabilidad** (más bajo = mejor) |
+
+`OrientMesh` además ya lleva `overhang_angle` configurable por objeto.
+
+### Lo que sí puede faltar — verificar antes de escribir
+
+- **Espesor mínimo de pared** comparado contra el ancho de línea configurado.
+- **Señales para deducir el uso** (decisión 6): agujeros pasantes, roscas,
+  relación superficie/volumen, simetría.
+
+Solo si no existen se escriben, y siguiendo el estilo de `libslic3r`.
+
+### Referencia descartada
+
+Hay una implementación propia en el repo archivado
+`nachorepara/nacod3d-slicer`, en `src/viewer/malla.ts`. **Quedó obsoleta**: Orca
+lo hace mejor. Se conserva únicamente por un detalle que documenta bien —
+que hay que soldar vértices con tolerancia antes de poder detectar agujeros,
+porque un STL repite cada vértice sin decir cuáles son el mismo punto.
 
 ## Cómo se redactan los avisos
 
