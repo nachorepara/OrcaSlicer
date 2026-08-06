@@ -165,6 +165,44 @@ existen es peor que no enlazar.
 explica bien solo, cuesta más volver a meter la integración. Conviene revisarlo
 cuando comoimprimo crezca.
 
+### 8. Un solo aviso de privacidad, antes de la primera foto
+
+Las fotos van a un tercero: el proveedor de IA. Antes de la primera subida
+—y solo esa vez— se explica sin vueltas:
+
+```
+┌─ Antes de tu primera foto ───────────┐
+│ Para analizar la impresión, la foto  │
+│ se envía a <proveedor>, que la       │
+│ procesa y devuelve el diagnóstico.   │
+│                                      │
+│ No la guardamos en ningún servidor   │
+│ nuestro: el historial queda en tu    │
+│ computadora.                         │
+│    [ Entendido ]   [ Mejor no ]      │
+└──────────────────────────────────────┘
+```
+
+**Por qué una sola vez:** avisar en cada subida se vuelve ruido — a la tercera
+vez nadie lo lee, y termina siendo transparencia decorativa que además mete
+fricción en el flujo más importante del producto. Dejarlo solo en la
+documentación es peor: mucha gente sube una foto sin haber leído nada, y
+enterarse después se siente como un engaño.
+
+La afirmación de que no guardamos nada en servidores nuestros **tiene que
+seguir siendo cierta**. Si algún día aparece un backend que toque las fotos,
+este texto cambia primero.
+
+### 9. Responde en el idioma de la interfaz
+
+Si Orca está en español responde en español; en inglés, inglés. Se le indica al
+modelo y listo, sin trabajo extra.
+
+**Por qué no fijarlo en español:** el asistente es justamente la parte que nos
+diferencia, y atarlo a un idioma la vuelve inservible fuera de LATAM. Orca está
+traducido a decenas de idiomas y su comunidad es global; no hay razón para
+cerrarnos ahí.
+
 ---
 
 ## Lo que el análisis geométrico tiene que calcular
