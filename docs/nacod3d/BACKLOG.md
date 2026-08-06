@@ -60,6 +60,45 @@ vez bajó la altura de capa buscando calidad, y que las dos cosas se pelean. Per
 
 ---
 
+## Telemetría — DESCARTADA (2026-08-06)
+
+**La idea era** guardar estadísticas de qué lamina la gente, para alimentar los
+cursos de comoimprimo.
+
+**Por qué se descartó.** Orca desactiva la telemetría de Bambu **a propósito, en
+tres lugares distintos** de `GUI_App.cpp`, con comentarios que insisten en
+"never" y "always disable it". No es un descuido: es una postura, y parte de por
+qué la gente eligió Orca sobre Bambu Studio.
+
+Nuestro código es público (AGPL) y la comunidad de impresión 3D lee estas cosas.
+Agregar telemetría a un fork de Orca se descubriría en semanas, y el titular no
+sería "nacod3d recopila estadísticas anónimas" sino **"un fork de Orca le puso el
+tracking que Orca sacó a propósito"**. Un proyecto chico no se recupera de eso.
+
+A eso se suma lo legal: GDPR para usuarios europeos y Ley 25.326 en Argentina
+exigen consentimiento explícito y previo, política de privacidad y mecanismo de
+borrado. Se puede cumplir, pero es responsabilidad y trabajo para algo que además
+expone.
+
+**Si alguna vez se retoma**, la única forma aceptable:
+
+- Opt-in real, apagado por defecto, con la lista exacta de qué se envía
+- Solo agregados anónimos: modelo de impresora, material, altura de capa
+- **Nunca** nombres de archivo, geometría ni modelos
+- Adopción esperable: ~5%. Es dato legítimo, no masivo.
+
+**Alternativas más baratas para la misma pregunta**, en orden de utilidad real:
+
+1. **Los issues y discusiones del repo.** La gente cuenta sus problemas sola y
+   con más detalle del que daría cualquier telemetría. Un "no me pega el PETG en
+   la cama" vale más para armar un curso que mil registros de altura de capa.
+2. **La analítica de comoimprimo** — qué buscan y qué leen está más cerca de la
+   pregunta real que qué laminan.
+3. **Las descargas de GitHub** para volumen y crecimiento.
+4. Una encuesta opcional enlazada desde el "Acerca de".
+
+---
+
 ## Otras ideas
 
 *(a completar)*
