@@ -3,6 +3,29 @@
 > Decisiones tomadas el 2026-08-06. Cada una tiene su porqué: si alguna se
 > revierte, que sea sabiendo qué se está descartando.
 
+## La tesis del producto
+
+**Orca ya hace el razonamiento. Solo que nunca lo muestra.**
+
+Verificado en el código el 2026-08-06. Cuando apretás auto-orientar, `Orient.cpp`
+puntúa cada orientación candidata por área en voladizo, casco inferior, contorno,
+área de caras de ángulo bajo, volumen y relación de estabilidad. Elige la mejor,
+rota el objeto… y descarta todo el razonamiento.
+
+Lo único que `OrientJob.cpp` le muestra al usuario es una barra de progreso que
+dice "Orienting" y dos mensajes de error sobre placas bloqueadas. **Cero
+explicación de por qué eligió esa orientación y no otra.**
+
+De ahí salen las dos mitades del producto:
+
+| | |
+|---|---|
+| **Hacer visible lo que ya existe** | Los números que Orca calcula y descarta: por qué esta orientación, cuánto soporte ahorra, qué tan estable queda. No hay que calcular nada nuevo. |
+| **Agregar lo que Orca no toca** | Recomendaciones de paredes, relleno y tipo de soporte, **en función del uso de la pieza** — que es lo único que Orca no puede saber. Acá entra la IA. |
+
+La primera mitad es sorprendentemente barata: el dato ya está, falta la UX. La
+segunda es donde está el diferencial real.
+
 ## El riesgo que define todo
 
 Un asistente que diga *"esta pieza tiene voladizos, considerá usar soportes"* es
