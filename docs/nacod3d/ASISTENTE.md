@@ -128,6 +128,43 @@ facturaciones separadas en las tres empresas. "Conectá tu IA" **no** significa
 "usá lo que ya pagás" — siempre hay que cargar crédito de API aparte. La
 documentación tiene que decirlo sin vueltas, o generamos frustración.
 
+### 6. Deduce el uso de la pieza y pide confirmación
+
+En vez de preguntar en frío, arriesga una lectura y deja corregirla:
+
+```
+┌────────────────────────────────────┐
+│ Parece una pieza técnica: tiene    │
+│ agujeros pasantes y paredes de     │
+│ 3mm. Recomiendo 40% de relleno.    │
+│     [ Correcto ]  [ No, es otra ]  │
+└────────────────────────────────────┘
+```
+
+**La deducción es geométrica, no de IA.** Agujeros pasantes, espesor de pared,
+relación superficie/volumen, roscas, simetría — todo se mide localmente. Así la
+lectura es gratis, instantánea y funciona sin API key, que es coherente con la
+decisión 4. La IA entra **después de la confirmación**, para el consejo
+profundo.
+
+Sin esto, la app estaría gastando una consulta de IA que nadie pidió, cada vez
+que se carga una pieza.
+
+**Regla contra el riesgo de errarle:** si la geometría es ambigua, **no
+arriesga** — pregunta en vez de afirmar. Un asistente que se equivoca con
+seguridad pierde autoridad mucho más rápido de lo que la gana uno que acierta.
+Es preferible callarse.
+
+### 7. comoimprimo se integra más adelante
+
+El asistente explica por su cuenta. Los enlaces al manual se suman cuando tenga
+contenido cubriendo los temas que el asistente toca — enlazar a páginas que no
+existen es peor que no enlazar.
+
+**No perder de vista que esto quedó pendiente:** una vez que el asistente ya
+explica bien solo, cuesta más volver a meter la integración. Conviene revisarlo
+cuando comoimprimo crezca.
+
 ---
 
 ## Lo que el análisis geométrico tiene que calcular
@@ -142,6 +179,9 @@ como el contexto que se le manda al modelo.
 - Área de contacto con la cama
 - Integridad de la malla: aristas abiertas, aristas con 3+ caras, triángulos
   degenerados, normales invertidas
+- **Señales para deducir el uso** (decisión 6): agujeros pasantes, espesor de
+  pared, relación superficie/volumen, roscas, simetría. Con un umbral de
+  confianza por debajo del cual no se arriesga una lectura y se pregunta.
 
 **Antes de escribir nada de esto, revisar qué ya existe en `libslic3r`.** Orca
 tiene reparación de mallas y cálculo de soportes propios; reimplementarlos sería
@@ -165,8 +205,6 @@ En términos de **qué le va a pasar a la impresión**, nunca en jerga:
 
 ## Pendiente de decidir
 
-- **Integración con comoimprimo.** El "¿Por qué?" podría enlazar al manual en
-  vez de explicar desde cero. Es coherente, aporta profundidad y trae tráfico.
 - **Qué se guarda del historial y dónde.** Local, y con qué formato.
 - **Privacidad de las fotos.** Van a un tercero (el proveedor de IA): hay que
   decirlo claramente antes de la primera subida.
