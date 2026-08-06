@@ -29,6 +29,7 @@ from __future__ import annotations
 import argparse
 import collections
 import os
+import re
 import sys
 
 # ---------------------------------------------------------------------------
@@ -67,6 +68,23 @@ MAPA = {
     "00675B": "9A3412",  # teal 800  -> orange 800
 }
 
+# Orca también escribe colores como componentes decimales: wxColour(0, 150, 136)
+# es exactamente #009688. Buscar solo hexadecimal deja pasar 79 apariciones,
+# entre ellas el fondo de la pestaña activa — el elemento más visible de toda
+# la interfaz.
+MAPA_DECIMAL = {
+    (0, 150, 136): (234, 88, 12),    # #009688 -> #EA580C
+    (0, 137, 123): (194, 65, 12),    # #00897B -> #C2410C
+    (38, 166, 154): (249, 115, 22),  # #26A69A -> #F97316
+    (0, 103, 91): (154, 52, 18),     # #00675B -> #9A3412
+    (0, 129, 114): (194, 65, 12),    # #008172 -> #C2410C
+    (77, 182, 172): (251, 146, 60),  # #4DB6AC -> #FB923C
+}
+
+RE_WXCOLOUR = re.compile(
+    r"(wxColour\s*\(\s*)(\d{1,3})(\s*,\s*)(\d{1,3})(\s*,\s*)(\d{1,3})(\s*[,)])"
+)
+
 EXTENSIONES = (".cpp", ".hpp", ".h", ".css", ".svg", ".json", ".js", ".html", ".ini")
 
 # Rutas que NO se tocan: paletas de datos, no colores de marca.
@@ -97,8 +115,10 @@ def grupo_de(ruta: str) -> int:
 
 
 def reemplazar(texto: str) -> tuple[str, int]:
-    """Aplica el mapa respetando mayúsculas/minúsculas y prefijo (# o 0x)."""
+    """Aplica ambos mapas: hexadecimal y componentes decimales."""
     total = 0
+
+    # Forma hexadecimal: #009688, 0x009688 — respetando mayúsculas/minúsculas.
     for viejo, nuevo in MAPA.items():
         for v, n in ((viejo.upper(), nuevo.upper()), (viejo.lower(), nuevo.lower())):
             for prefijo in ("#", "0x", "0X"):
@@ -107,6 +127,22 @@ def reemplazar(texto: str) -> tuple[str, int]:
                 if cuantos:
                     texto = texto.replace(objetivo, prefijo + n)
                     total += cuantos
+
+    # Forma decimal: wxColour(0, 150, 136). Se preserva el espaciado original
+    # para no ensuciar el diff con cambios de formato.
+    def _dec(m: "re.Match[str]") -> str:
+        nonlocal total
+        rgb = (int(m.group(2)), int(m.group(4)), int(m.group(6)))
+        destino = MAPA_DECIMAL.get(rgb)
+        if destino is None:
+            return m.group(0)
+        total += 1
+        return (
+            f"{m.group(1)}{destino[0]}{m.group(3)}{destino[1]}"
+            f"{m.group(5)}{destino[2]}{m.group(7)}"
+        )
+
+    texto = RE_WXCOLOUR.sub(_dec, texto)
     return texto, total
 
 

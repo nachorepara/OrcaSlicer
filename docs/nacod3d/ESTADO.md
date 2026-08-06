@@ -22,8 +22,8 @@ lo que agregamos arriba.
 |---|---|
 | El fork compila sin modificar | ✅ 29 jobs verdes, instaladores generados |
 | CI recortado a Windows x64 | ✅ `build_nacod3d.yml` |
-| Re-skin a naranja | ✅ aplicado, **falta verlo con los ojos** |
-| Renombre del producto | ⬜ |
+| Re-skin a naranja | ✅ aplicado y revisado en pantalla |
+| Renombre del producto | ✅ `nacod3d Slicer`, con atribución en el Acerca de |
 | Análisis geométrico | ⬜ |
 | Panel de IA | ⬜ |
 
@@ -97,6 +97,11 @@ Dos decisiones que conviene no revertir sin pensarlo:
   oscuros para pressed. Cada uno va al naranja de luminosidad pareja. Un
   reemplazo plano dejaría todos los botones del mismo color y se perdería la
   sensación de que responden al mouse.
+- **Busca el color en dos formas: hexadecimal y decimal.** Orca escribe algunos
+  colores como `wxColour(0, 150, 136)`, que es exactamente `#009688`. La primera
+  versión del script solo miraba hexadecimal y dejó pasar 79 apariciones — entre
+  ellas el fondo de la pestaña activa, el elemento más visible de la interfaz.
+  Si aparece otro verde suelto, revisar primero si está escrito en decimal.
 - **Excluye las paletas de datos.** Las rampas tipo viridis y ColorBrewer de la
   vista térmica del G-code, los colores de filamento, la paleta del selector de
   colores y los colores de terminal de xterm.js **no son colores de marca**.
