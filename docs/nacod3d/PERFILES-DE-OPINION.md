@@ -111,7 +111,23 @@ valores, y el fabricante los puso ahí por algo.
 Nota: los valores de la CR-10 V2 (0.15 / 0.2 / 60% / 3) están **todos en la
 minoría**. No es un perfil representativo para sacar conclusiones generales.
 
-## ⚠️ Posible bug del upstream — verificar en pantalla
+## ~~Posible bug del upstream~~ — DESCARTADO, era mi error
+
+> **Verificado en pantalla el 2026-08-07: NO hay bug.** El perfil dice `"60%"` y
+> la interfaz muestra **0.35** — el valor heredado del padre. Orca descarta el
+> valor inválido y usa la herencia. Mi lectura del `iss >> value` no reflejaba
+> lo que pasa en la carga real de perfiles.
+>
+> **Lo único real, y es menor:** quien escribió esos 373 perfiles quiso poner un
+> porcentaje y Orca lo ignora en silencio. La intención del fabricante se pierde,
+> pero el resultado es el valor heredado, que es sensato. Nada roto.
+>
+> **Lección:** tres veces en esta sesión saqué una conclusión leyendo código y
+> las tres veces la realidad la desmintió. El código dice qué es posible; los
+> perfiles y la pantalla dicen qué pasa. **Verificar en la app antes de afirmar.**
+
+<details>
+<summary>El razonamiento equivocado, conservado como advertencia</summary>
 
 `support_object_xy_distance` está declarado como **`coFloat`** — un número en
 milímetros, con máximo 10:
@@ -140,10 +156,9 @@ es `coFloat` desde el import original de BambuStudio: nunca cambió.
 descarto que haya manejo en otro lado — a 373 perfiles de escala, un bug así
 debería haber saltado antes.
 
-**Cómo verificarlo, cuando haya binario local:** cargar el perfil
-`0.20mm Standard @Creality CR10V2` y mirar qué muestra la interfaz en
-*Soporte › Distancia XY soporte/objeto*. Si dice 60, es un bug real y vale
-reportarlo al upstream.
+**Verificado: la interfaz muestra 0.35, no 60.** Hipótesis descartada.
+
+</details>
 
 ## Lo que hace falta y no puedo inventar
 
