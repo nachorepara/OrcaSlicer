@@ -60,6 +60,55 @@ vez bajó la altura de capa buscando calidad, y que las dos cosas se pelean. Per
 
 ---
 
+## Aviso de detalles que se imprimen más gruesos de lo diseñado
+
+**El problema.** Con Arachne (el generador por defecto), los detalles del modelo
+más finos que `min_bead_width` **se ensanchan hasta ese valor**. Con los defaults
+y boquilla de 0.4 mm, cualquier detalle entre 0.10 y 0.34 mm sale de 0.34 mm.
+
+Un detalle de 0.15 mm sale **más del doble de grueso**. Si el diseño tenía una
+tolerancia o un encastre, la pieza puede no entrar — y **no hay forma de
+enterarse antes de imprimir**.
+
+**Lo que queremos.**
+
+```
+┌──────────────────────────────────────────────────┐
+│ 3 zonas de tu modelo son más finas que 0.34 mm   │
+│ y se van a imprimir más gruesas de lo diseñado.  │
+│                                                   │
+│ La más fina mide 0.15 mm y saldrá de 0.34 mm.    │
+│                                                   │
+│ Propuesta:                                        │
+│   Ancho mínimo de pared   85%  →  45%            │
+│                                                   │
+│ Si esas zonas son encastres o tolerancias,        │
+│ la pieza podría no entrar como está ahora.        │
+│                                                   │
+│        [ Aplicar ]   [ ¿Por qué? ]   [ Ignorar ] │
+└──────────────────────────────────────────────────┘
+```
+
+**El arreglo correcto** es bajar `min_bead_width`, que actúa como **piso**: si el
+detalle es más grueso que ese valor, la pared toma el espesor real del detalle.
+Bajarlo de 85% a 45% hace que un detalle de 0.15 mm salga de 0.18 en vez de 0.34.
+
+**Lo que NO es el arreglo:** cambiar de generador de paredes. Arachne ya es el
+default, y volver al clásico es peor — tiene ancho de extrusión constante,
+mientras que Arachne es variable justamente para manejar estos casos. Lo que hay
+que hacer es permitirle ir más fino.
+
+**Sin IA y sin costo.** La detección la hace Orca durante el laminado; nosotros
+leemos el resultado y lo explicamos.
+
+**Limitación:** el aviso llega después de laminar, no al cargar la pieza, porque
+la detección es por capa en 2D. Igual sirve: es antes de imprimir.
+
+Detalle técnico completo en [`INVESTIGACION-ORIENT.md`](INVESTIGACION-ORIENT.md)
+sección 2.
+
+---
+
 ## Telemetría — DESCARTADA (2026-08-06)
 
 **La idea era** guardar estadísticas de qué lamina la gente, para alimentar los
