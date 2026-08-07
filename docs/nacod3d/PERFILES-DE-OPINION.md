@@ -83,6 +83,68 @@ opiniones/
 Así no hay que rehacerlo cuando se extienda. Cuesta más antes del primer
 resultado visible, pero evita reescribir el mecanismo tres veces.
 
+## Los valores varían por impresora — el botón no puede ser una lista fija
+
+Medido sobre **493 perfiles "0.2 Standard"** de todos los fabricantes:
+
+| Parámetro | Mayoría | Pero también |
+|---|---|---|
+| Distancia Z superior | 0.2 (294) | 0.15, 0.1, 0.18, 0.12, 0 |
+| Espaciado de interfaz | 0.5 (297) | **0.2 (101)**, 0, 0.12, 1 |
+| Distancia XY | 0.35 (306) | **60% (62)**, 0.5, 0.2, 0.3 |
+| Capas de interfaz | 2 (364) | 3 (108) |
+| Ángulo umbral | 30 (419) | 40, 35, 20 |
+
+Hay una mayoría clara en cada uno, pero la variación es real y **buena parte es
+deliberada**: una impresora rápida o de cinemática distinta necesita otros
+valores, y el fabricante los puso ahí por algo.
+
+> **Consecuencia de diseño:** la opinión **no puede ser una lista de valores
+> absolutos** que pise el perfil. Tiene que expresarse como reglas relativas al
+> perfil cargado — «si el espaciado de interfaz está por debajo de X, subirlo»,
+> «la distancia Z, al menos Y» — o en unidades relativas a la boquilla y la
+> altura de capa.
+>
+> Un valor absoluto de Creality aplicado a una Prusa sería exactamente el tipo
+> de mal consejo que hunde la credibilidad del asistente.
+
+Nota: los valores de la CR-10 V2 (0.15 / 0.2 / 60% / 3) están **todos en la
+minoría**. No es un perfil representativo para sacar conclusiones generales.
+
+## ⚠️ Posible bug del upstream — verificar en pantalla
+
+`support_object_xy_distance` está declarado como **`coFloat`** — un número en
+milímetros, con máximo 10:
+
+```cpp
+this->add("support_object_xy_distance", coFloat);
+((ConfigOptionFloat, support_object_xy_distance))
+def->sidetext = L("mm");   def->max = 10;
+```
+
+Pero **373 perfiles de 14 fabricantes** le ponen un porcentaje (`"60%"`),
+incluidos Prusa, Creality, Anycubic, Qidi y Ratrig — y el de la CR-10 V2.
+
+Y `ConfigOptionFloat::deserialize` (`Config.hpp:825`) hace:
+
+```cpp
+std::istringstream iss(str);
+iss >> this->value;    // lee 60, se detiene en el '%'
+return !iss.fail();    // no falla: leyó un número
+```
+
+Con lo cual `"60%"` quedaría en **60 mm** de separación, que es absurdo. El tipo
+es `coFloat` desde el import original de BambuStudio: nunca cambió.
+
+**No está confirmado.** No encontré acotado al máximo al cargar, pero tampoco
+descarto que haya manejo en otro lado — a 373 perfiles de escala, un bug así
+debería haber saltado antes.
+
+**Cómo verificarlo, cuando haya binario local:** cargar el perfil
+`0.20mm Standard @Creality CR10V2` y mirar qué muestra la interfaz en
+*Soporte › Distancia XY soporte/objeto*. Si dice 60, es un bug real y vale
+reportarlo al upstream.
+
 ## Lo que hace falta y no puedo inventar
 
 **Los valores tienen que salir de la experiencia de Nacho.** Ese es todo el
