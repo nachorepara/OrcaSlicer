@@ -135,55 +135,20 @@ La opción 2 es claramente mejor para iterar; la 1 es menos setup.
 
 ## Dónde retomar
 
-### 1. Mirar el re-skin con los ojos
+Ver **[`RETOMAR.md`](RETOMAR.md)**, que se mantiene actualizado con el estado de
+las compilaciones y el próximo paso concreto.
 
-**Esto no se puede verificar por CI.** Que compile no prueba que se vea bien.
+## Documentos de este proyecto
 
-Bajar el instalador de la última corrida verde en la pestaña **Actions** del
-repo (`OrcaSlicer_Windows_..._x64` o la versión portable), instalarlo, y
-revisar:
-
-- Botones normales, de confirmar y de alerta, en **modo claro y oscuro**
-- La barra superior y las pestañas
-- El panel del AMS con una impresora conectada (el recorrido del filamento
-  tiene que verse naranja)
-- Los diagramas que aparecen al pasar el mouse por un parámetro
-- **Que la vista térmica del G-code siga con sus colores originales** — si ahí
-  salió naranja, algo se tocó de más
-
-Si aparece algún verde suelto: agregarlo al mapa de `tools/reskin-nacod3d.py`
-y volver a correr el script.
-
-### 2. Renombrar el producto
-
-Nombre visible, iconos y splash a "nacod3d Slicer". **Con la atribución a
-OrcaSlicer en el Acerca de** (ver sección de licencia).
-
-Ojo con el alcance: hay strings de "Orca" en localización, nombres de archivo de
-configuración y rutas de datos del usuario. Cambiar la ruta de datos rompería
-los perfiles de quien ya tenga Orca instalado — conviene decidirlo a conciencia.
-
-### 3. Portar el análisis geométrico
-
-En el repo archivado `nachorepara/nacod3d-slicer`, el archivo
-`src/viewer/malla.ts` tiene la lógica ya pensada y escrita:
-
-- Soldado de vértices con tolerancia de 1 µm — un STL repite cada vértice sin
-  decir cuáles son el mismo punto, y sin soldar no se puede saber qué aristas
-  comparten dos triángulos ni, por lo tanto, detectar agujeros
-- Aristas abiertas (agujeros), aristas con 3+ caras, triángulos degenerados
-- Normales invertidas por volumen con signo negativo
-- Y los avisos redactados en términos de **qué le va a pasar a la impresión**,
-  no en jerga
-
-Es la base de las recomendaciones de IA. Orca ya tiene reparación de mallas
-propia, así que **primero hay que ver qué de esto ya existe** en `libslic3r`
-antes de portar nada.
-
-### 4. Panel de IA
-
-Decidir dónde vive dentro de la UI de Orca sin alterar lo existente. Recién
-después de que el resto esté sólido.
+| Documento | Qué tiene |
+|---|---|
+| [`RETOMAR.md`](RETOMAR.md) | Estado de las compilaciones y qué sigue |
+| [`ENTORNO.md`](ENTORNO.md) | Cómo levantar el entorno en una máquina nueva |
+| [`ASISTENTE.md`](ASISTENTE.md) | La tesis del producto y las 9 decisiones de diseño |
+| [`INVESTIGACION-ORIENT.md`](INVESTIGACION-ORIENT.md) | Cómo sacar el razonamiento de la orientación; detalles finos |
+| [`INVESTIGACION-MATERIALES.md`](INVESTIGACION-MATERIALES.md) | Qué sabe Orca de los materiales y qué falta aportar |
+| [`MONETIZACION.md`](MONETIZACION.md) | BYOK, donaciones, y el límite del AGPL |
+| [`BACKLOG.md`](BACKLOG.md) | Ideas con la investigación ya hecha |
 
 ---
 
