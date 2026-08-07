@@ -1,97 +1,126 @@
 # Dónde retomar
 
-> Actualizado: 2026-08-06, antes de un viaje.
+> Actualizado: 2026-08-07.
 >
-> Para el contexto completo: [`ESTADO.md`](ESTADO.md) ·
-> [`ASISTENTE.md`](ASISTENTE.md) · [`MONETIZACION.md`](MONETIZACION.md) ·
-> [`BACKLOG.md`](BACKLOG.md) · [`ENTORNO.md`](ENTORNO.md)
+> Índice de todos los documentos en [`ESTADO.md`](ESTADO.md).
 
-## Lo primero al volver
+## Estado de las compilaciones
+
+| | Estado |
+|---|---|
+| **Dependencias locales** (WSL) | ✅ **Terminadas.** 18 h 24 min, 218 componentes, 6 GB en `deps/build` |
+| **App local** (WSL) | 🔨 Compilando. ~483 objetos al momento de escribir |
+| **CI de Windows** | ✅ El `.exe` compila. El test que fallaba ya está arreglado (commit `c1b561fdda`), falta una corrida que lo confirme |
+
+### Retomar la compilación local
 
 ```bash
 cd ~/orca-nacod3d
-./build_linux.sh -d -j6      # retoma la compilación de dependencias
+./build_linux.sh -s -j6        # es incremental: no rehace lo ya compilado
+./build/src/orca-slicer        # abre por WSLg, sin configurar nada
 ```
 
-**Es resumible**: lo que ya se compiló no se rehace. Cuando termine:
+**`-j6` y no `-j12` a propósito:** con 12 procesos en paralelo la compilación se
+come los 15 GB de RAM y muere. Es lo mismo que le pasó dos veces al runner de
+GitHub (*"the hosted runner lost communication with the server"*).
+
+### Disparar el CI
 
 ```bash
-./build_linux.sh -s -j6      # compila la app
+gh workflow run build_nacod3d.yml --repo nachorepara/OrcaSlicer --ref main
 ```
 
-Y para verla andando (usa WSLg, no hace falta configurar nada):
+**Paciencia:** GitHub puede tardar ~6 minutos en registrar un push. Disparar a
+mano en el medio crea una corrida duplicada que después se cancela sola.
 
-```bash
-./build/src/orca-slicer
-```
+---
 
-## Estado de las dos compilaciones
+## Lo primero al volver: abrir la app y verificar
 
-| | Estado al pausar |
-|---|---|
-| **Dependencias locales** (WSL) | ~665 MB compilados, 27 dependencias iniciadas, 96 marcas de completado. **Se interrumpe al apagar y se retoma sola.** |
-| **CI de Windows** | Tercer intento en cola. Corre en los servidores de GitHub: **no se ve afectado por apagar la máquina.** |
-
-Ver el resultado del CI:
-
-```bash
-gh run view 31124626416 --repo nachorepara/OrcaSlicer --json conclusion --jq .conclusion
-```
-
-Si salió verde, el instalador está en la pestaña **Actions** del repo, artefacto
-`OrcaSlicer_Windows_..._x64_portable`.
-
-### Si el CI volvió a fallar
-
-Ya falló dos veces con *"The hosted runner lost communication with the server"* —
-**es infraestructura de GitHub, no nuestro código**: compilar Orca exprime los
-runners gratuitos de Windows hasta tumbarlos. La prueba es que una compilación
-anterior con el mismo peso salió verde.
-
-No relanzarlo indefinidamente. El build local es justamente la salida.
-
-## Qué falta verificar en pantalla
-
-Cuando haya un binario, mirar:
+Nada de esto se puede comprobar por CI.
 
 - [ ] **La pestaña activa en naranja.** Era teal escrito en decimal
-      (`wxColour(0, 150, 136)`) y se corrigió; es lo más visible de la interfaz.
-- [ ] **Dice "nacod3d Slicer"** en la ventana, y arranca con configuración limpia
-      sin tocar la instalación de Orca 2.4.2 existente.
-- [ ] **La atribución en el Acerca de**, sumada a la cadena que Orca ya mantiene.
+      (`wxColour(0, 150, 136)`), que el script no veía. Es lo más visible.
+- [ ] **Dice "nacod3d Slicer"** y arranca con configuración limpia, sin tocar una
+      instalación de Orca existente.
+- [ ] **La atribución en el Acerca de**, sumada a la cadena que Orca mantiene.
 - [ ] **La vista térmica del G-code con sus colores originales.** Si ahí salió
       naranja, tocamos una paleta de datos que no correspondía.
+- [ ] **Probar el modo solapamiento**: poner el ángulo umbral de soporte en 0 y
+      laminar una pieza real. Puede ser la respuesta a que el automático ponga
+      soportes de más. Ver [`PERFILES-DE-OPINION.md`](PERFILES-DE-OPINION.md).
+
+---
 
 ## Lo próximo a construir
 
-En orden, y con la investigación ya hecha:
+En orden, y con la investigación hecha. **Ninguna de las tres primeras necesita
+IA** — son gratis, funcionan sin internet y sirven para todos.
 
-**1. Mostrar el razonamiento de la orientación.** Es la tesis del producto:
-Orca calcula voladizo, casco inferior, estabilidad y contorno para cada
-orientación candidata, elige la mejor y **descarta el razonamiento**. Nosotros lo
-mostramos. No hay que calcular nada nuevo — está todo en
-`src/libslic3r/Orient.cpp`.
+### 1. Mostrar el razonamiento de la orientación
 
-**No necesita IA ni cuesta un centavo.** Es la primera función útil del asistente
-y sirve como prueba de la UX antes de sumar la capa que depende de un tercero.
+La tesis del producto. Orca puntúa cada orientación candidata y **descarta el
+razonamiento**. Plan de implementación completo en
+[`INVESTIGACION-ORIENT.md`](INVESTIGACION-ORIENT.md) sección 1: mover
+`CostItems` al `.hpp`, agregar un campo a `OrientMesh` y poblarlo antes del
+`return`. Son ~20 líneas y tocan archivos del upstream.
 
-**2. Verificar qué falta del análisis geométrico.** Casi todo ya existe
-(`TriangleMeshStats`, `Orient.cpp`). Falta confirmar si Orca calcula el espesor
-mínimo de pared contra el ancho de línea, y las señales para deducir el uso de la
-pieza: agujeros pasantes, roscas, relación superficie/volumen.
+### 2. Aviso de detalles que se imprimen más gruesos de lo diseñado
 
-**3. Recién después, el panel de IA.** Con las 9 decisiones de diseño ya tomadas
-en [`ASISTENTE.md`](ASISTENTE.md).
+Con Arachne, un detalle de 0.15 mm sale de 0.34 — más del doble. Si había una
+tolerancia o un encastre, la pieza puede no entrar y no hay forma de saberlo
+antes de imprimir. Ver [`BACKLOG.md`](BACKLOG.md).
 
-## Recordatorios
+**Ojo:** hay que leer el generador de paredes efectivo del perfil cargado. La
+mayoría usa clásico, no Arachne.
 
-- **`ccache`**: quedó pendiente instalarlo (`sudo apt install -y ccache`).
-  Acelera bastante las recompilaciones.
+### 3. Resumen de «todo lo distinto al estándar»
+
+Para cuando abrís un 3MF ajeno. Todas las piezas ya existen en Orca; falta la
+pantalla. Ver [`BACKLOG.md`](BACKLOG.md).
+
+### 4. El botón «como lo haría nacod3d»
+
+Diseño en [`PERFILES-DE-OPINION.md`](PERFILES-DE-OPINION.md). **Bloqueado
+esperando los valores de Nacho** — el mecanismo se puede construir antes, pero
+sin sus números es un botón vacío.
+
+### 5. El panel de IA
+
+Con las 9 decisiones ya tomadas en [`ASISTENTE.md`](ASISTENTE.md).
+
+---
+
+## La lección más importante de la sesión
+
+**Tres veces saqué una conclusión leyendo el código y las tres veces la realidad
+la desmintió:**
+
+| Afirmé leyendo código | La realidad |
+|---|---|
+| Arachne es el generador por defecto | 316 perfiles usan clásico; el default del código no es el efectivo |
+| Los soportes usan Z=0.2, espaciado=0.5, XY=0.35 mm | El perfil de la CR-10 V2 usa 0.15, 0.2 y otra cosa |
+| El `"60%"` se parsea como 60 mm | Se descarta y hereda 0.35 — verificado en pantalla |
+
+**El código dice qué es posible; los perfiles y la pantalla dicen qué pasa.**
+
+Cuando se afirme "Orca hace X", que vaya con verificación en la aplicación o con
+la aclaración explícita de que es una inferencia sin confirmar. Las tres veces la
+corrección vino de Nacho contrastando con años de uso real.
+
+---
+
+## Cabos sueltos
+
+- **`ccache`** quedó sin instalar (`sudo apt install -y ccache`). Aceleraría las
+  recompilaciones.
 - **El fork viejo** `nachorepara/BambuStudio` sigue existiendo sin uso. Para
   borrarlo: `gh auth refresh -h github.com -s delete_repo` y después
   `gh repo delete nachorepara/BambuStudio --yes`.
 - **El repo Tauri** `nachorepara/nacod3d-slicer` quedó archivado. Solo conserva
-  valor documental.
-- **Paciencia con los disparos de CI**: GitHub puede tardar ~6 minutos en
-  registrar un push. Disparar a mano en el medio crea una corrida duplicada que
-  después se cancela sola.
+  valor documental; su `malla.ts` está superado por lo que Orca ya trae.
+- **`per_user_temp_dir`** hardcodea la carpeta temporal `orcaslicer_<usuario>`,
+  así que nuestro fork la comparte con una instalación real de Orca. Riesgo bajo,
+  pero es el primer lugar donde mirar si aparece algo raro con las dos abiertas.
+- **El arreglo del test** de auditoría de plugins es genérico y **le serviría al
+  upstream**: se les puede ofrecer como PR.
