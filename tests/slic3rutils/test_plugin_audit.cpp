@@ -7,6 +7,7 @@
 
 #include "plugin_test_utils.hpp"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 
 #include <string>
@@ -61,8 +62,11 @@ TEST_CASE("Plugin audit denies app config and token filenames anywhere", "[audit
 
     SECTION("matching is case-insensitive on every platform")
     {
-        CHECK(mgr.is_denied_filename(fs::path("orcaslicer.conf")));
-        CHECK(mgr.is_denied_filename(fs::path("ORCASLICER.CONF")));
+        // Derived from SLIC3R_APP_KEY rather than spelled out, so the test keeps
+        // checking case-insensitivity in forks that rename the application.
+        const std::string conf = std::string(SLIC3R_APP_KEY) + ".conf";
+        CHECK(mgr.is_denied_filename(fs::path(boost::algorithm::to_lower_copy(conf))));
+        CHECK(mgr.is_denied_filename(fs::path(boost::algorithm::to_upper_copy(conf))));
         CHECK(mgr.is_denied_filename(fs::path("ORCA_REFRESH_TOKEN.SEC")));
     }
 
