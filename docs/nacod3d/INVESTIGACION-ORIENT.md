@@ -104,27 +104,67 @@ Orientación elegida: rotada 90° en X
 
 ---
 
-## 2. Paredes demasiado finas — Orca lo sabe y no avisa
+## 2. Detalles finos — dos cosas pasan, y ninguna se avisa
 
-**`detect_thin_wall`** (`PrintConfig.cpp:7253`) es una **opción de configuración**,
-no un análisis que se le muestre al usuario.
+> **Corregido el 2026-08-07.** La primera versión de este documento decía que
+> `detect_thin_wall` descartaba paredes finas. **Es falso**: es un mecanismo de
+> rescate, y ni siquiera aplica al generador que viene por defecto.
 
-**Arachne** (`src/libslic3r/Arachne/WallToolPaths.hpp:136`) tiene
-`min_feature_size`, documentado como:
+### Qué hace realmente `detect_thin_wall`
 
-> *"The minimum size of the features that can be widened by the widening beading
-> meta-strategy. **Features thinner than that will not be printed**"*
+Es una opción del **generador clásico solamente** — vive dentro de
+`PerimeterGenerator::process_classic()` (`PerimeterGenerator.cpp:1424`) y **no
+aplica a Arachne, que es el generador por defecto**
+(`PerimeterGeneratorType::Arachne`).
 
-Verificado: **no hay ningún aviso al usuario** cuando eso pasa. Orca descarta en
-silencio los detalles más finos que la boquilla, y uno se entera cuando la pieza
-sale sin ellos.
+Cuando aplica, es un **rescate**: calcula el eje medial de la zona fina y la
+imprime con una sola línea. Su tooltip lo dice: *"detecta paredes finas que no
+pueden contener dos líneas y usa una sola línea para imprimirlas"*.
 
-**Oportunidad clara**: avisar antes de imprimir qué partes del modelo no van a
-salir. Es información que Orca ya tiene.
+Y aun con la opción apagada, el generador clásico tiene otro rescate: para
+"islas angostas" usa un **ancho de extrusión menor** en vez de descartarlas.
+
+O sea: **el generador clásico no descarta nada.**
+
+### Lo que sí pasa, con Arachne (el default)
+
+Dos umbrales, ambos como porcentaje del diámetro de boquilla:
+
+| Parámetro | Default | En boquilla 0.4 |
+|---|---|---|
+| `min_feature_size` | 25% | 0.10 mm |
+| `min_bead_width` | 85% | 0.34 mm |
+
+El tooltip de `min_feature_size` es literal:
+
+> *"Los detalles del modelo más finos que este valor **no se imprimirán**,
+> mientras que los más gruesos **se ensancharán** al ancho mínimo de pared."*
+
+Con boquilla de 0.4 mm y configuración por defecto:
+
+| Espesor del detalle | Qué le pasa |
+|---|---|
+| menos de 0.10 mm | **No se imprime. Desaparece.** |
+| 0.10 – 0.34 mm | **Se ensancha a 0.34 mm.** La geometría cambia. |
+| más de 0.34 mm | Se imprime como fue diseñado |
+
+**Verificado: ninguno de los dos casos se le informa al usuario.**
+
+### La oportunidad — y el segundo caso es el bueno
+
+Que un detalle de 0.05 mm desaparezca suele ser irrelevante: a esa escala casi
+siempre es un artefacto del modelado.
+
+**El caso interesante es el ensanchado.** Un detalle de 0.15 mm sale de 0.34 —
+más del doble de grueso. Si el diseño tenía una tolerancia o un encastre, la
+pieza puede no entrar, y **no hay ninguna forma de enterarse antes de imprimir**.
+
+Un aviso del tipo *"3 zonas de tu modelo se van a imprimir más gruesas de lo
+diseñado"* sería información que ningún laminador da hoy.
 
 **Limitación**: la detección ocurre **durante el laminado**, por capa en 2D, no
-sobre la malla cruda. Así que el aviso llega después de laminar, no al cargar la
-pieza. Igual sirve — es antes de imprimir, que es lo que importa.
+sobre la malla cruda. El aviso llega después de laminar, no al cargar la pieza.
+Igual sirve: es antes de imprimir, que es lo que importa.
 
 ---
 
