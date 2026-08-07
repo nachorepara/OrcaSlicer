@@ -62,9 +62,14 @@ vez bajó la altura de capa buscando calidad, y que las dos cosas se pelean. Per
 
 ## Aviso de detalles que se imprimen más gruesos de lo diseñado
 
-**El problema.** Con Arachne (el generador por defecto), los detalles del modelo
-más finos que `min_bead_width` **se ensanchan hasta ese valor**. Con los defaults
-y boquilla de 0.4 mm, cualquier detalle entre 0.10 y 0.34 mm sale de 0.34 mm.
+**El problema.** Con Arachne, los detalles del modelo más finos que
+`min_bead_width` **se ensanchan hasta ese valor**. Con los defaults y boquilla de
+0.4 mm, cualquier detalle entre 0.10 y 0.34 mm sale de 0.34 mm.
+
+> **Ojo:** esto aplica solo cuando el perfil usa Arachne, y **la mayoría de los
+> perfiles usa el clásico** (316 contra 60). El aviso tiene que leer la
+> configuración efectiva del perfil cargado, no asumir un generador. Ver
+> [`INVESTIGACION-ORIENT.md`](INVESTIGACION-ORIENT.md) sección 2.
 
 Un detalle de 0.15 mm sale **más del doble de grueso**. Si el diseño tenía una
 tolerancia o un encastre, la pieza puede no entrar — y **no hay forma de

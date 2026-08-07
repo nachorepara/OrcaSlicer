@@ -110,12 +110,39 @@ Orientación elegida: rotada 90° en X
 > `detect_thin_wall` descartaba paredes finas. **Es falso**: es un mecanismo de
 > rescate, y ni siquiera aplica al generador que viene por defecto.
 
+### Cuál generador de paredes se usa realmente — cuidado acá
+
+**El default del código no es el default efectivo.** `PrintConfig.cpp` define
+Arachne, pero **los perfiles lo pisan**, y la mayoría elige clásico:
+
+| Fabricante | classic | arachne |
+|---|---|---|
+| **Creality** | **135** | 4 |
+| Anycubic | 71 | 0 |
+| Sovol | 20 | 0 |
+| Artillery | 3 | 14 |
+| Prusa | 0 | 3 |
+| Voron | — | — (cae en Arachne por código) |
+
+Total: **316 perfiles eligen clásico contra 60 que eligen Arachne.**
+
+Y hay excepciones dentro de un mismo fabricante. `0.20mm Standard @Creality
+CR10V2` **no define `wall_generator` en ningún eslabón de su cadena**, así que
+cae en Arachne — mientras que otros 135 perfiles Creality sí ponen clásico.
+Ese mismo perfil activa `detect_thin_wall`, que en Arachne no hace nada.
+Parece una inconsistencia de los perfiles del upstream, no algo intencional.
+
+> **Implicación de diseño, importante:** el asistente **no puede asumir un
+> generador**. Tiene que leer la configuración efectiva del perfil cargado,
+> resolviendo la cadena de herencia y los cambios manuales del usuario. Un aviso
+> que asuma Arachne sería incorrecto para la mayoría de los perfiles; uno que
+> asuma clásico sería incorrecto para los demás.
+
 ### Qué hace realmente `detect_thin_wall`
 
 Es una opción del **generador clásico solamente** — vive dentro de
-`PerimeterGenerator::process_classic()` (`PerimeterGenerator.cpp:1424`) y **no
-aplica a Arachne, que es el generador por defecto**
-(`PerimeterGeneratorType::Arachne`).
+`PerimeterGenerator::process_classic()` (`PerimeterGenerator.cpp:1424`) y no
+aplica a Arachne.
 
 Cuando aplica, es un **rescate**: calcula el eje medial de la zona fina y la
 imprime con una sola línea. Su tooltip lo dice: *"detecta paredes finas que no
@@ -126,7 +153,7 @@ Y aun con la opción apagada, el generador clásico tiene otro rescate: para
 
 O sea: **el generador clásico no descarta nada.**
 
-### Lo que sí pasa, con Arachne (el default)
+### Lo que sí pasa, con Arachne
 
 Dos umbrales, ambos como porcentaje del diámetro de boquilla:
 
