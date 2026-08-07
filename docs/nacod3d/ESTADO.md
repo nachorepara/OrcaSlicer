@@ -148,6 +148,7 @@ las compilaciones y el próximo paso concreto.
 | [`INVESTIGACION-ORIENT.md`](INVESTIGACION-ORIENT.md) | Cómo sacar el razonamiento de la orientación; detalles finos |
 | [`INVESTIGACION-MATERIALES.md`](INVESTIGACION-MATERIALES.md) | Qué sabe Orca de los materiales y qué falta aportar |
 | [`MONETIZACION.md`](MONETIZACION.md) | BYOK, donaciones, y el límite del AGPL |
+| [`PERFILES-DE-OPINION.md`](PERFILES-DE-OPINION.md) | El botón «como lo haría nacod3d» |
 | [`BACKLOG.md`](BACKLOG.md) | Ideas con la investigación ya hecha |
 
 ---
